@@ -15,9 +15,25 @@ using namespace std;
  * tree with branches. Nodes can have as many children as needed (or none), but all nodes
  * have exactly one parent node, with the exception of the root node which has none.
  */
-template <class T>
 class Tree {
-
+	friend ostream& operator<< (ostream &s, Tree &T);
+	protected:
+		int* treeArray;
+	public:
+		Tree();
+		Tree(int size);
+		Tree(const Tree &obj);
+		~Tree();
+		int LCA(int node1, int node2);
+		int Parent(int child);
+		int* Children(int parent);
+		int* Siblings(int node);
+		int Root();
+		void setRoot(int rootNode);
+		void setParent(int node, int parent);
+		int* nodesAtLevel(int level);
+		int height();
+		int* Preorder();
 };
 
 /*
