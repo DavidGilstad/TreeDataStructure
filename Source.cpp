@@ -33,6 +33,7 @@ class Tree {
 		void setRoot(int rootNode);
 		void setParent(int node, int parent);
 		int* nodesAtLevel(int level);
+		int Level(int node);
 		int height();
 		int* Preorder();
 };
@@ -102,6 +103,18 @@ int* Tree::Siblings(int node) {
 int Tree::Root() {
 	for (int i = 0; i < size; i++)
 		if (Parent(i) == -1) return i;
+}
+
+void Tree::setRoot(int rootNode) {
+	treeArray[rootNode] = -1;
+}
+
+void Tree::setParent(int node, int parent) {
+	treeArray[node] = parent;
+}
+
+int* Tree::nodesAtLevel(int level) {
+
 }
 
 /*
