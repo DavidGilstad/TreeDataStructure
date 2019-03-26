@@ -25,7 +25,7 @@ class Tree {
 		Tree(int numElements);
 		Tree(const Tree &obj);
 		~Tree();
-		int LCA(int node1, int node2);
+		int LCA(int n1, int n2);
 		int Parent(int child);
 		int* Children(int parent);
 		int* Siblings(int node);
@@ -38,13 +38,13 @@ class Tree {
 };
 
 Tree::Tree() {
-	treeArray = new int[];
+	treeArray = new int[0];
 	size = 0;
 }
 
 Tree::Tree(int numElements) {
 	size = numElements;
-	treeArray = new int[size];
+	treeArray[size] = { -1 };
 }
 
 Tree::Tree(const Tree &obj) {
@@ -57,6 +57,51 @@ Tree::Tree(const Tree &obj) {
 Tree::~Tree() {
 	delete[] treeArray;
 	cout << "Tree has been deleted" << endl;
+}
+
+int Tree::LCA(int n1, int n2) {
+	int temp = n2;
+	while (n1 != -1) {
+		while (n2 != -1) {
+			if (n1 == n2) return n1;
+			else n2 = Parent(n2);
+		}
+		n2 = temp;
+		n1 = Parent(n1);
+	}
+	return Root();
+}
+
+int Tree::Parent(int child) {
+	return treeArray[child];
+}
+
+int* Tree::Children(int parent) {
+	int numChildren = 0;
+	for (int i = 0; i < size; i++)
+		if (parent == treeArray[i]) ++numChildren;
+	int *result = new int[numChildren];
+	int resultIndex = 0;
+	for (int i = 0; i < size; i++)
+		if (parent == treeArray[i]) result[resultIndex++] = i;
+	return result;
+}
+
+int* Tree::Siblings(int node) {
+	int parent = Parent(node);
+	int numChildren = -1; // account for this node
+	for (int i = 0; i < size; i++)
+		if (parent == treeArray[i]) ++numChildren;
+	int *result = new int[numChildren];
+	int resultIndex = 0;
+	for (int i = 0; i < size; i++)
+		if (parent == treeArray[i] && i != node) result[resultIndex++] = i;
+	return result;
+}
+
+int Tree::Root() {
+	for (int i = 0; i < size; i++)
+		if (Parent(i) == -1) return i;
 }
 
 /*
