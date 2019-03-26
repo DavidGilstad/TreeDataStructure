@@ -32,11 +32,28 @@ class Tree {
 		int Root();
 		void setRoot(int rootNode);
 		void setParent(int node, int parent);
-		int* nodesAtLevel(int level);
 		int Level(int node);
+		int* nodesAtLevel(int level);
 		int height();
 		int* Preorder();
+
+		void print();
 };
+
+void Tree::print() {
+	cout << "0->" << treeArray[0];
+	for (int i = 1; i < size; i++)
+		cout << ",   " << i << "->" << treeArray[i];
+	cout << endl;
+}
+
+ostream& operator<< (ostream &s, Tree &T) {
+	s << "0->" << T.treeArray[0];
+	for (int i = 1; i < T.size; i++)
+		s << ",   " << i << "->" << T.treeArray[i];
+	s << endl;
+	return s;
+}
 
 Tree::Tree() {
 	treeArray = new int[0];
@@ -45,7 +62,7 @@ Tree::Tree() {
 
 Tree::Tree(int numElements) {
 	size = numElements;
-	treeArray[size] = { -1 };
+	treeArray = new int[numElements];
 }
 
 Tree::Tree(const Tree &obj) {
@@ -113,8 +130,30 @@ void Tree::setParent(int node, int parent) {
 	treeArray[node] = parent;
 }
 
-int* Tree::nodesAtLevel(int level) {
+int Tree::Level(int node) {
+	int level = 0;
+	do {
+		level++;
+		node = Parent(node);
+	} while (node != -1);
+	return level;
+}
 
+int* Tree::nodesAtLevel(int level) {
+	int numOnLevel = 0;
+	for (int i = 0; i < size; i++)
+		if (level == Level(i)) numOnLevel++;
+	int* result = new int[numOnLevel];
+	for (int i = 0, index = 0; i < size; i++)
+		if (level == Level(i)) result[index++] = i;
+	return result;
+}
+
+int Tree::height() {
+	int max = 1;
+	for (int i = 0; i < size; i++)
+		if (Level(i) > max) max = Level(i);
+	return max;
 }
 
 /*
@@ -122,7 +161,30 @@ int* Tree::nodesAtLevel(int level) {
  * methods in the tree class.
  */
 int main() {
+	
+	Tree *T = new Tree(11);
+	T->setRoot(6);
+	T->setParent(0, 6);
+	T->setParent(5, 6);
+	T->setParent(4, 6);
+	T->setParent(1, 0);
+	T->setParent(2, 0);
+	T->setParent(3, 5);
+	T->setParent(7, 4);
+	T->setParent(8, 7);
+	T->setParent(9, 7);
+	T->setParent(10, 7);
 
+	cout << "The tree is: " << endl << *T << endl;
+
+	cout << "The root is: " << T->Root() << endl;
+	cout << "The height is: " << T->height() << endl;
+	cout << "The level of node 2 is: " << T->Level(2) << endl;
+	cout << "The least common ancestor of 8 and 3 is: " << T->LCA(8, 3) << endl;
+	T->setParent(3, 4);
+	cout << "The new LCA of 8 and 3 is: " << T->LCA(3, 8) << endl;
+	cout << "The siblings of 9 are: " << T->Siblings(9)[0] << ", " << T->Siblings(9)[1] << endl;
+	
 
 	system("pause");
 	return 0;
