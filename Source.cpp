@@ -16,10 +16,10 @@ using namespace std;
  * have exactly one parent node, with the exception of the root node which has none.
  */
 class Tree {
+	friend ostream& operator<< (ostream &s, int *A);
 	friend ostream& operator<< (ostream &s, Tree &T);
 	protected:
-		int* treeArray;
-		int size;
+		int size, root, *treeArray;
 	public:
 		Tree();
 		Tree(int numElements);
@@ -28,6 +28,7 @@ class Tree {
 		int LCA(int n1, int n2);
 		int Parent(int child);
 		int* Children(int parent);
+		int numChildren(int parent);
 		int* Siblings(int node);
 		int Root();
 		void setRoot(int rootNode);
@@ -36,16 +37,8 @@ class Tree {
 		int* nodesAtLevel(int level);
 		int height();
 		int* Preorder();
-
-		void print();
 };
 
-void Tree::print() {
-	cout << "0->" << treeArray[0];
-	for (int i = 1; i < size; i++)
-		cout << ",   " << i << "->" << treeArray[i];
-	cout << endl;
-}
 
 ostream& operator<< (ostream &s, Tree &T) {
 	s << "0->" << T.treeArray[0];
@@ -95,22 +88,23 @@ int Tree::Parent(int child) {
 }
 
 int* Tree::Children(int parent) {
-	int numChildren = 0;
-	for (int i = 0; i < size; i++)
-		if (parent == treeArray[i]) ++numChildren;
-	int *result = new int[numChildren];
+	int *result = new int[numChildren(parent)];
 	int resultIndex = 0;
 	for (int i = 0; i < size; i++)
 		if (parent == treeArray[i]) result[resultIndex++] = i;
 	return result;
 }
 
-int* Tree::Siblings(int node) {
-	int parent = Parent(node);
-	int numChildren = -1; // account for this node
+int Tree::numChildren(int parent) {
+	int numChildren = 0;
 	for (int i = 0; i < size; i++)
 		if (parent == treeArray[i]) ++numChildren;
-	int *result = new int[numChildren];
+	return numChildren;
+}
+
+int* Tree::Siblings(int node) {
+	int parent = Parent(node);
+	int *result = new int[numChildren(parent) - 1];
 	int resultIndex = 0;
 	for (int i = 0; i < size; i++)
 		if (parent == treeArray[i] && i != node) result[resultIndex++] = i;
@@ -123,7 +117,7 @@ int Tree::Root() {
 }
 
 void Tree::setRoot(int rootNode) {
-	treeArray[rootNode] = -1;
+	root = rootNode;
 }
 
 void Tree::setParent(int node, int parent) {
@@ -150,10 +144,14 @@ int* Tree::nodesAtLevel(int level) {
 }
 
 int Tree::height() {
-	int max = 1;
+	int max = 0;
 	for (int i = 0; i < size; i++)
 		if (Level(i) > max) max = Level(i);
 	return max;
+}
+
+int* Tree::Preorder() {
+
 }
 
 /*
@@ -161,30 +159,43 @@ int Tree::height() {
  * methods in the tree class.
  */
 int main() {
-	
-	Tree *T = new Tree(11);
-	T->setRoot(6);
-	T->setParent(0, 6);
-	T->setParent(5, 6);
-	T->setParent(4, 6);
-	T->setParent(1, 0);
-	T->setParent(2, 0);
-	T->setParent(3, 5);
-	T->setParent(7, 4);
-	T->setParent(8, 7);
-	T->setParent(9, 7);
-	T->setParent(10, 7);
+	Tree *myTree;
+	int numNodes, node, parent;
 
-	cout << "The tree is: " << endl << *T << endl;
+	cin >> numNodes;
+	myTree = new Tree(numNodes);
+	for (int i = 0; i < numNodes; i++) {
+		cin >> node >> parent;
+		myTree->setParent(node, parent);
+		if (parent == -1) myTree->setRoot(node);
+	}
 
-	cout << "The root is: " << T->Root() << endl;
-	cout << "The height is: " << T->height() << endl;
-	cout << "The level of node 2 is: " << T->Level(2) << endl;
-	cout << "The least common ancestor of 8 and 3 is: " << T->LCA(8, 3) << endl;
-	T->setParent(3, 4);
-	cout << "The new LCA of 8 and 3 is: " << T->LCA(3, 8) << endl;
-	cout << "The siblings of 9 are: " << T->Siblings(9)[0] << ", " << T->Siblings(9)[1] << endl;
-	
+	cout << "The tree read in is: " << endl << *myTree << endl;
+	Tree *newTree = new Tree(*myTree);
+	cout << "The copied tree is: " << endl << *newTree << endl;
+	cout << "The root of the tree is: " << myTree->Root() << endl;
+
+	cout << "The least common ancesor of nodes 3 and 8 is: " << newTree->LCA(3, 8) << endl;
+	cout << "The least common ancesor of nodes 13 and 8 is: " << newTree->LCA(13, 8) << endl;
+	cout << "The least common ancesor of nodes 13 and 11 is: " << newTree->LCA(11, 13) << endl;
+
+	cout << "The children of node 12 is: " << myTree->Children(12) << endl;
+	cout << "The children of node 10 is: " << myTree->Children(10) << endl;
+
+	cout << "The siblings of node 3 is: " << myTree->Siblings(3) << endl;
+	cout << "The siblings of node 12 is: " << myTree->Siblings(12) << endl;
+
+	cout << "The nodes at level 3 are: " << myTree->nodesAtLevel(3) << endl;
+	cout << "The height of the tree is: " << myTree->height() << endl;
+
+	cout << "The level of node 3 in the tree is: " << myTree->Level(3) << endl;
+	cout << "The level of node 12 in the tree is: " << myTree->Level(12) << endl;
+
+	cout << "The preorder traversal of the tree is: " << endl;
+	cout << myTree->Preorder() << endl;
+
+	delete myTree;
+	delete newTree;
 
 	system("pause");
 	return 0;
