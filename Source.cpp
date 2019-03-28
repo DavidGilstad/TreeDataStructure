@@ -1,6 +1,4 @@
 /*
- * Data Structures Project 4
- *
  * This project provides a class and main method for a tree data structures. SDG
  * 
  *			 author: David Gilstad
@@ -13,10 +11,9 @@ using namespace std;
  * This class reperesents a tree data structure. A tree consists of nodes that hold
  * information. Nodes have a parent and children that are connected to other nodes in the
  * tree with branches. Nodes can have as many children as needed (or none), but all nodes
- * have exactly one parent node, with the exception of the root node which has none.
+ * have exactly one parent node, with the exception of the root node which has no parent.
  */
 class Tree {
-	friend ostream& operator<< (ostream &s, int *A);
 	friend ostream& operator<< (ostream &s, Tree &T);
 	protected:
 		int size, root, *treeArray;
@@ -27,24 +24,21 @@ class Tree {
 		~Tree();
 		int LCA(int n1, int n2);
 		int Parent(int child);
-		int* Children(int parent);
+		Tree* Children(int parent);
 		int numChildren(int parent);
-		int* Siblings(int node);
+		Tree* Siblings(int node);
 		int Root();
 		void setRoot(int rootNode);
 		void setParent(int node, int parent);
 		int Level(int node);
-		int* nodesAtLevel(int level);
+		Tree* nodesAtLevel(int level);
 		int height();
-		int* Preorder();
 };
-
 
 ostream& operator<< (ostream &s, Tree &T) {
 	s << "0->" << T.treeArray[0];
 	for (int i = 1; i < T.size; i++)
 		s << ",   " << i << "->" << T.treeArray[i];
-	s << endl;
 	return s;
 }
 
@@ -87,11 +81,10 @@ int Tree::Parent(int child) {
 	return treeArray[child];
 }
 
-int* Tree::Children(int parent) {
-	int *result = new int[numChildren(parent)];
-	int resultIndex = 0;
-	for (int i = 0; i < size; i++)
-		if (parent == treeArray[i]) result[resultIndex++] = i;
+Tree* Tree::Children(int parent) {
+	Tree *result = new Tree(numChildren(parent));
+	for (int i = 0, index = 0; i < size; i++)
+		if (parent == treeArray[i]) result->setParent(index++, i);
 	return result;
 }
 
@@ -102,18 +95,16 @@ int Tree::numChildren(int parent) {
 	return numChildren;
 }
 
-int* Tree::Siblings(int node) {
+Tree* Tree::Siblings(int node) {
 	int parent = Parent(node);
-	int *result = new int[numChildren(parent) - 1];
-	int resultIndex = 0;
-	for (int i = 0; i < size; i++)
-		if (parent == treeArray[i] && i != node) result[resultIndex++] = i;
+	Tree *result = new Tree(numChildren(parent) - 1);
+	for (int i = 0, index = 0; i < size; i++)
+		if (parent == treeArray[i] && i != node) result->setParent(index++, i);
 	return result;
 }
 
 int Tree::Root() {
-	for (int i = 0; i < size; i++)
-		if (Parent(i) == -1) return i;
+	return root;
 }
 
 void Tree::setRoot(int rootNode) {
@@ -133,13 +124,13 @@ int Tree::Level(int node) {
 	return level;
 }
 
-int* Tree::nodesAtLevel(int level) {
+Tree* Tree::nodesAtLevel(int level) {
 	int numOnLevel = 0;
 	for (int i = 0; i < size; i++)
 		if (level == Level(i)) numOnLevel++;
-	int* result = new int[numOnLevel];
+	Tree* result = new Tree(numOnLevel);
 	for (int i = 0, index = 0; i < size; i++)
-		if (level == Level(i)) result[index++] = i;
+		if (level == Level(i)) result->setParent(index++, i);
 	return result;
 }
 
@@ -148,10 +139,6 @@ int Tree::height() {
 	for (int i = 0; i < size; i++)
 		if (Level(i) > max) max = Level(i);
 	return max;
-}
-
-int* Tree::Preorder() {
-
 }
 
 /*
@@ -169,7 +156,6 @@ int main() {
 		myTree->setParent(node, parent);
 		if (parent == -1) myTree->setRoot(node);
 	}
-
 	cout << "The tree read in is: " << endl << *myTree << endl;
 	Tree *newTree = new Tree(*myTree);
 	cout << "The copied tree is: " << endl << *newTree << endl;
@@ -179,24 +165,38 @@ int main() {
 	cout << "The least common ancesor of nodes 13 and 8 is: " << newTree->LCA(13, 8) << endl;
 	cout << "The least common ancesor of nodes 13 and 11 is: " << newTree->LCA(11, 13) << endl;
 
-	cout << "The children of node 12 is: " << myTree->Children(12) << endl;
-	cout << "The children of node 10 is: " << myTree->Children(10) << endl;
+	cout << "The children of node 12 is: " << *myTree->Children(12) << endl;
+	cout << "The children of node 10 is: " << *myTree->Children(10) << endl;
 
-	cout << "The siblings of node 3 is: " << myTree->Siblings(3) << endl;
-	cout << "The siblings of node 12 is: " << myTree->Siblings(12) << endl;
+	cout << "The siblings of node 3 is: " << *myTree->Siblings(3) << endl;
+	cout << "The siblings of node 12 is: " << *myTree->Siblings(12) << endl;
 
-	cout << "The nodes at level 3 are: " << myTree->nodesAtLevel(3) << endl;
+	cout << "The nodes at level 3 are: " << *myTree->nodesAtLevel(3) << endl;
 	cout << "The height of the tree is: " << myTree->height() << endl;
 
 	cout << "The level of node 3 in the tree is: " << myTree->Level(3) << endl;
 	cout << "The level of node 12 in the tree is: " << myTree->Level(12) << endl;
 
-	cout << "The preorder traversal of the tree is: " << endl;
-	cout << myTree->Preorder() << endl;
-
 	delete myTree;
 	delete newTree;
-
 	system("pause");
 	return 0;
 }
+
+/* 
+14
+0 1
+1 6
+2 12
+3 9
+4 10
+5 0
+6 -1
+7 9
+8 12
+9 12
+10 6
+11 10
+12 6
+13 4
+*/
