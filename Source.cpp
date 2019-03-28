@@ -1,4 +1,6 @@
 /*
+ * Data Structures Project 4
+ *
  * This project provides a class and main method for a tree data structures. SDG
  * 
  *			 author: David Gilstad
@@ -16,25 +18,28 @@ using namespace std;
 class Tree {
 	friend ostream& operator<< (ostream &s, Tree &T);
 	protected:
-		int size, root, *treeArray;
+		int size, // # of nodes in the tree
+			root, // root element of the tree
+			*treeArray; // array holding all elements and their parent
 	public:
 		Tree();
 		Tree(int numElements);
 		Tree(const Tree &obj);
 		~Tree();
-		int LCA(int n1, int n2);
-		int Parent(int child);
-		Tree* Children(int parent);
-		int numChildren(int parent);
-		Tree* Siblings(int node);
-		int Root();
-		void setRoot(int rootNode);
 		void setParent(int node, int parent);
-		int Level(int node);
-		Tree* nodesAtLevel(int level);
+		void setRoot(int rootNode);
+		int Root();
+		int Parent(int child);
+		int numChildren(int parent);
+		int Level(int node);	
 		int height();
+		int LCA(int n1, int n2);
+		Tree* Children(int parent);
+		Tree* Siblings(int node);
+		Tree* nodesAtLevel(int level);
 };
 
+/* Outputs the tree in the form "parent->child, parent->child, parent->child.... */
 ostream& operator<< (ostream &s, Tree &T) {
 	s << "0->" << T.treeArray[0];
 	for (int i = 1; i < T.size; i++)
@@ -64,30 +69,27 @@ Tree::~Tree() {
 	cout << "Tree has been deleted" << endl;
 }
 
-int Tree::LCA(int n1, int n2) {
-	int temp = n2;
-	while (n1 != -1) {
-		while (n2 != -1) {
-			if (n1 == n2) return n1;
-			else n2 = Parent(n2);
-		}
-		n2 = temp;
-		n1 = Parent(n1);
-	}
-	return Root();
+/* Gives the given node the given parent. */
+void Tree::setParent(int node, int parent) {
+	treeArray[node] = parent;
 }
 
+/* Sets the root to the given node. */
+void Tree::setRoot(int rootNode) {
+	root = rootNode;
+}
+
+/* Returns the root of the tree. */
+int Tree::Root() {
+	return root;
+}
+
+/* Returns the parent of the given node. */
 int Tree::Parent(int child) {
 	return treeArray[child];
 }
 
-Tree* Tree::Children(int parent) {
-	Tree *result = new Tree(numChildren(parent));
-	for (int i = 0, index = 0; i < size; i++)
-		if (parent == treeArray[i]) result->setParent(index++, i);
-	return result;
-}
-
+/* Tells how many children a given node has. */
 int Tree::numChildren(int parent) {
 	int numChildren = 0;
 	for (int i = 0; i < size; i++)
@@ -95,26 +97,7 @@ int Tree::numChildren(int parent) {
 	return numChildren;
 }
 
-Tree* Tree::Siblings(int node) {
-	int parent = Parent(node);
-	Tree *result = new Tree(numChildren(parent) - 1);
-	for (int i = 0, index = 0; i < size; i++)
-		if (parent == treeArray[i] && i != node) result->setParent(index++, i);
-	return result;
-}
-
-int Tree::Root() {
-	return root;
-}
-
-void Tree::setRoot(int rootNode) {
-	root = rootNode;
-}
-
-void Tree::setParent(int node, int parent) {
-	treeArray[node] = parent;
-}
-
+/* Returns what level the given node is on. */
 int Tree::Level(int node) {
 	int level = 0;
 	do {
@@ -124,6 +107,45 @@ int Tree::Level(int node) {
 	return level;
 }
 
+/* Returns the height of the tree. */
+int Tree::height() {
+	int max = 0;
+	for (int i = 0; i < size; i++)
+		if (Level(i) > max) max = Level(i);
+	return max;
+}
+
+/* Returns the "youngest" node in common with both n1 and n2. */
+int Tree::LCA(int n1, int n2) {
+	int temp = n2;
+	while (n1 != -1) {
+		while (n2 != -1) {
+			if (n1 == n2) return n1;
+			else n2 = Parent(n2);
+		}
+		n2 = temp;
+		n1 = Parent(n1);
+	} return root;
+}
+
+/* Returns a tree containing all children of the given node. */
+Tree* Tree::Children(int parent) {
+	Tree *result = new Tree(numChildren(parent));
+	for (int i = 0, index = 0; i < size; i++)
+		if (parent == treeArray[i]) result->setParent(index++, i);
+	return result;
+}
+
+/* Returns a tree containing all siblings of the given node. */
+Tree* Tree::Siblings(int node) {
+	int parent = Parent(node);
+	Tree *result = new Tree(numChildren(parent) - 1);
+	for (int i = 0, index = 0; i < size; i++)
+		if (parent == treeArray[i] && i != node) result->setParent(index++, i);
+	return result;
+}
+
+/* Returns a tree with all the nodes on the given level. */
 Tree* Tree::nodesAtLevel(int level) {
 	int numOnLevel = 0;
 	for (int i = 0; i < size; i++)
@@ -132,13 +154,6 @@ Tree* Tree::nodesAtLevel(int level) {
 	for (int i = 0, index = 0; i < size; i++)
 		if (level == Level(i)) result->setParent(index++, i);
 	return result;
-}
-
-int Tree::height() {
-	int max = 0;
-	for (int i = 0; i < size; i++)
-		if (Level(i) > max) max = Level(i);
-	return max;
 }
 
 /*
@@ -167,13 +182,11 @@ int main() {
 
 	cout << "The children of node 12 is: " << *myTree->Children(12) << endl;
 	cout << "The children of node 10 is: " << *myTree->Children(10) << endl;
-
 	cout << "The siblings of node 3 is: " << *myTree->Siblings(3) << endl;
 	cout << "The siblings of node 12 is: " << *myTree->Siblings(12) << endl;
 
 	cout << "The nodes at level 3 are: " << *myTree->nodesAtLevel(3) << endl;
 	cout << "The height of the tree is: " << myTree->height() << endl;
-
 	cout << "The level of node 3 in the tree is: " << myTree->Level(3) << endl;
 	cout << "The level of node 12 in the tree is: " << myTree->Level(12) << endl;
 
@@ -182,21 +195,3 @@ int main() {
 	system("pause");
 	return 0;
 }
-
-/* 
-14
-0 1
-1 6
-2 12
-3 9
-4 10
-5 0
-6 -1
-7 9
-8 12
-9 12
-10 6
-11 10
-12 6
-13 4
-*/
